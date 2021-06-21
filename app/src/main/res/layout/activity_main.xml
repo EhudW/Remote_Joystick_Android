@@ -17,7 +17,7 @@
                 android:id="@+id/textView" android:text="3232"/>
         <com.example.remotejoystick.JoystickView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/joystickView6"/>
+                android:layout_height="wrap_content" android:id="@+id/joystickView"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

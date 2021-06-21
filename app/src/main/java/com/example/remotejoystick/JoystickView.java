@@ -12,8 +12,18 @@ import androidx.annotation.RequiresApi;
 
 public class JoystickView extends FrameLayout {
     public static  interface Action {
+        // all values between 0 to 1;
+        // px,py is the joystick so it isn't accurate -> and probably won't be exactly 0 or 1
+        // pa is horizontal bar, pb is vertical bar.
         void Run(float px, float py, float pa, float pb) ;
     }
+
+    private float px=0.5f;
+    private float py=0.5f;
+    private float pa=0.5f;
+    private float pb=0;
+    public JoystickView.Action onChange = null;
+
     public void updateObserver(){
         if (onChange != null)
             onChange.Run(px,py,pa,pb);
@@ -29,12 +39,12 @@ public class JoystickView extends FrameLayout {
 
     inflate(c ,R.layout.joystick_view,this);
     int rr =55;
-        final JoystickView tt = this;
+        final JoystickView self = this;
         ((SeekBar)findViewById(R.id.seekBar_value_a)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                tt.pa = progress/100f;
-                tt.updateObserver();
+                self.pa = progress/100f;
+                self.updateObserver();
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -44,8 +54,8 @@ public class JoystickView extends FrameLayout {
         ((SeekBar)findViewById(R.id.seekBar2_value_b)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                tt.pb = progress/100f;
-                tt.updateObserver();
+                self.pb = progress/100f;
+                self.updateObserver();
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -72,8 +82,7 @@ public class JoystickView extends FrameLayout {
         super(context, attrs, defStyle);
         init(context);
     }
-    private float px=0.5f,py=0.5f, pa=0.5f,pb=0;
-    public JoystickView.Action onChange = null;
+
     @Override
     public boolean onTouchEvent(MotionEvent event){
         if (event == null ) {return true;}

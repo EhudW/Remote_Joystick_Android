@@ -1,40 +1,44 @@
 package com.example.remotejoystick;
 
 import android.os.Build;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.lifecycle.ViewModel;
 
 import java.net.Socket;
 import java.io.*;
 
 public class MainActivity extends AppCompatActivity {
-    public LinearLayout l=null;
+    private JoystickView joystickView=null;
+    private ViewModel viewModel=null;
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        /*
-        new Thread(){
+        this.joystickView = (JoystickView) findViewById(R.id.joystickView);
+        this.viewModel = new ViewModel(new FGModel());
+        this.joystickView.onChange=new JoystickView.Action(){
+            @Override
+            public void Run(float px, float py, float pa, float pb) {
+                viewModel.setValues_before_calc(px,py,pa,pb);
+            }
+        };
+        final MainActivity self = this;
+        this.viewModel.onError = new Runnable() {
             @Override
             public void run() {
-                super.run();
-                try{ MainActivity.main();
-            }catch(Exception e) {
-                }
+                Toast.makeText(self,"Connection Error",Toast.LENGTH_LONG).show();
             }
-        }.start();
-*/
-
-
+        };
     }
     public static void main() throws Exception{
        /* String ip="10.0.0.14"; int port = 5000;
