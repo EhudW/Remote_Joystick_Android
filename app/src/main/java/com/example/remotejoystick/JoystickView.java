@@ -35,15 +35,12 @@ public class JoystickView extends FrameLayout {
     public void updateObserver(){
         if (onChange != null)
             onChange.handle(this, new JoystickEventArgs(this.px, this.py, this.pa, this.pb));
+        //for debug
+        ((TextView) (findViewById(R.id.buttoe))).setText("px=" + px + "  py=" + py + "\n" + "pa=" + pa + "  pb=" + pb);
+
     }
     @RequiresApi(api = Build.VERSION_CODES.Q)
     private void init(Context c) {
-        this.onChange = new JoystickEventHandler() {
-            @Override
-            public void handle(Object sender, JoystickEventArgs args) {
-                ((TextView) (findViewById(R.id.buttoe))).setText("px=" + args.px + "  py=" + args.py + "\n" + "pa=" + args.pa + "  pb=" + args.pb);
-            }
-        };
 
     inflate(c ,R.layout.joystick_view,this);
     int rr =55;
