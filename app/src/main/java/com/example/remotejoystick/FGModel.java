@@ -1,8 +1,11 @@
 package com.example.remotejoystick;
 
+import java.io.PrintWriter;
+import java.net.Socket;
+
 public class FGModel {
     public Runnable onError = null;
-
+    private PrintWriter telnet = null;
     public FGModel() {}
     public void connect(String ipv4, int port){}
     public void updatePlaneData(float aileron, float elevator, float rudder, float throttle){}

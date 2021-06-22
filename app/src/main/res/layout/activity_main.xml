@@ -14,7 +14,23 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView" android:text="3232"/>
+                android:id="@+id/debug" android:text="3232"/>
+        <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="10"
+                android:id="@+id/ip_TextBox" android:hint="Ip address [version 4]"/>
+        <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/port_TextBox" android:hint="Port [Fg simulator, Tcp]"/>
+        <Button
+                android:text="Connect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/connect_Button"/>
         <com.example.remotejoystick.JoystickView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/joystickView"/>

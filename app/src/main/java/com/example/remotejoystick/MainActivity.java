@@ -1,19 +1,12 @@
 package com.example.remotejoystick;
 
 import android.os.Build;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.view.KeyEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import androidx.constraintlayout.widget.ConstraintLayout;
-
-import java.net.Socket;
-import java.io.*;
 
 public class MainActivity extends AppCompatActivity {
     private JoystickView joystickView=null;
@@ -25,11 +18,15 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         this.joystickView = (JoystickView) findViewById(R.id.joystickView);
+
+        // DEBUG ONLY
+        ((TextView)findViewById(R.id.debug)).setText(java.util.Calendar.getInstance().getTime().toString());
+
         this.viewModel = new ViewModel(new FGModel());
-        this.joystickView.onChange=new JoystickView.Action(){
+        this.joystickView.onChange=new JoystickView.JoystickEventHandler(){
             @Override
-            public void Run(float px, float py, float pa, float pb) {
-                viewModel.setValues_before_calc(px,py,pa,pb);
+            public void handle(Object sender, JoystickView.JoystickEventArgs args) {
+                viewModel.setValues_before_calc(args.px, args.py, args.pa, args.pb);
             }
         };
         final MainActivity self = this;
@@ -39,6 +36,14 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(self,"Connection Error",Toast.LENGTH_LONG).show();
             }
         };
+
+        ((TextView)findViewById(R.id.ip_TextBox)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                //if
+                return false;
+            }
+        });
     }
     public static void main() throws Exception{
        /* String ip="10.0.0.14"; int port = 5000;

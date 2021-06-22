@@ -3,7 +3,6 @@ package com.example.remotejoystick;
 //import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -11,29 +10,38 @@ import android.widget.*;
 import androidx.annotation.RequiresApi;
 
 public class JoystickView extends FrameLayout {
-    public static  interface Action {
+    public static class JoystickEventArgs {
+        public float px,py,pa,pb;
+        public JoystickEventArgs(float px, float py, float pa, float pb) {
+            this.px = px;
+            this.py = py;
+            this.pa = pa;
+            this.pb = pb;
+        }
+    }
+    public static interface JoystickEventHandler {
         // all values between 0 to 1;
         // px,py is the joystick so it isn't accurate -> and probably won't be exactly 0 or 1
         // pa is horizontal bar, pb is vertical bar.
-        void Run(float px, float py, float pa, float pb) ;
+        void handle(Object sender, JoystickEventArgs args) ;
     }
 
     private float px=0.5f;
     private float py=0.5f;
     private float pa=0.5f;
     private float pb=0;
-    public JoystickView.Action onChange = null;
+    public JoystickEventHandler onChange = null;
 
     public void updateObserver(){
         if (onChange != null)
-            onChange.Run(px,py,pa,pb);
+            onChange.handle(this, new JoystickEventArgs(this.px, this.py, this.pa, this.pb));
     }
     @RequiresApi(api = Build.VERSION_CODES.Q)
     private void init(Context c) {
-        this.onChange = new JoystickView.Action() {
+        this.onChange = new JoystickEventHandler() {
             @Override
-            public void Run(float px, float py, float pa, float pb) {
-                ((TextView) (findViewById(R.id.buttoe))).setText("px=" + px + "  py=" + py + "\n" + "pa=" + pa + "  pb=" + pb);
+            public void handle(Object sender, JoystickEventArgs args) {
+                ((TextView) (findViewById(R.id.buttoe))).setText("px=" + args.px + "  py=" + args.py + "\n" + "pa=" + args.pa + "  pb=" + args.pb);
             }
         };
 
