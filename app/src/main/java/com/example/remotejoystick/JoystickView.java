@@ -1,10 +1,14 @@
 package com.example.remotejoystick;
 
 //import android.app.Dialog;
+import android.app.Activity;
+import android.app.Notification;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.widget.*;
 import androidx.annotation.RequiresApi;
@@ -30,19 +34,29 @@ public class JoystickView extends FrameLayout {
     private float py=0.5f;
     private float pa=0.5f;
     private float pb=0;
-    public JoystickEventHandler onChange = null;
 
+    public JoystickEventHandler onChange = null;
+    public void resetValues() {
+        //(findViewById(R.id.j)).layout(0,0,55,55);
+        //((ImageView)(findViewById(R.id.j))).setForegroundGravity(Gravity.CENTER);
+        // will automatically update pa pb and run (3 times) the updateObserver - which will raise this.onChange.handel()
+
+        MotionEvent event = MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,245,245,0);
+        this.dispatchTouchEvent(event);
+        //this.px = 0.5f;
+        //this.py = 0.5f;
+        ((SeekBar)(findViewById(R.id.seekBar_value_a))).setProgress(50);
+        ((SeekBar)(findViewById(R.id.seekBar2_value_b))).setProgress(0);
+    }
     public void updateObserver(){
         if (onChange != null)
             onChange.handle(this, new JoystickEventArgs(this.px, this.py, this.pa, this.pb));
-        //for debug
-        ((TextView) (findViewById(R.id.buttoe))).setText("px=" + px + "  py=" + py + "\n" + "pa=" + pa + "  pb=" + pb);
-
     }
     @RequiresApi(api = Build.VERSION_CODES.Q)
     private void init(Context c) {
 
     inflate(c ,R.layout.joystick_view,this);
+
     int rr =55;
         final JoystickView self = this;
         ((SeekBar)findViewById(R.id.seekBar_value_a)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -67,6 +81,7 @@ public class JoystickView extends FrameLayout {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+        //resetValues();
         //invalidate();
     }
 

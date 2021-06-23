@@ -1,6 +1,8 @@
 package com.example.remotejoystick;
 
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -23,8 +25,6 @@ public class MainActivity extends AppCompatActivity {
         // get the JoystickView within the loaded xml
         this.joystickView = (JoystickView) findViewById(R.id.joystickView);
 
-        // DEBUG ONLY
-        ((TextView)findViewById(R.id.debug)).setText(java.util.Calendar.getInstance().getTime().toString());
         // create ViewModel and bind this view changes to set the model view propeties
         this.viewModel = new ViewModel(new FGModel());
         // anonymous classes can refer local final variables
@@ -33,7 +33,10 @@ public class MainActivity extends AppCompatActivity {
         this.viewModel.onError = new ErrorEventHandler() {
             @Override
             public void handle(Object sender, ErrorEventArgs args) {
-//                Toast.makeText(self, args.description, Toast.LENGTH_LONG).show();
+                Handler handler = new Handler(self.getMainLooper());
+                handler.post(()-> {
+                    Toast.makeText(self.getApplicationContext(), args.description, Toast.LENGTH_LONG).show();
+                });
             }
         };
         // bind viewModel to joystick data
@@ -74,6 +77,14 @@ public class MainActivity extends AppCompatActivity {
                 // if the port property of viewModel is invalid tcp port
                 // we already set onError as handler which tell the user about the problem
                 viewModel.connect();
+            }
+        });
+
+        // set onClick event handle to click on resetJoystick_Button
+        ((Button)findViewById(R.id.resetJoystick_Button)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                joystickView.resetValues();
             }
         });
     }

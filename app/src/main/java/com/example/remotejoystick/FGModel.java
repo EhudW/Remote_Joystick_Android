@@ -1,23 +1,33 @@
 package com.example.remotejoystick;
 
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 public class FGModel {
     public ErrorEventHandler onError = null;
-    private PrintWriter telnet = null;
-    ExecutorService es = null;
-
+    private volatile PrintWriter telnet = null;
+    private ExecutorService es = null;
+    private long lastTime = 0;
+    private int withinTime = 0;
     public FGModel() {
         this.es = Executors.newFixedThreadPool(1);
     }
     public void connect(String ipv4, int port) {
+        if (telnet != null)
+            telnet.close();
+        telnet = null;
         es.execute(() -> {
             try {
-                Socket fg = new Socket(ipv4, port);
+                Socket fg = new Socket();
+                // check HERE that the fg server is reachable
+                fg.connect(new InetSocketAddress(ipv4, port),2000);
                 telnet = new PrintWriter(fg.getOutputStream(), true);
             } catch (Exception e) {
                 if (onError!=null)
@@ -25,14 +35,39 @@ public class FGModel {
             }
         });
     }
+    private PrintWriter getTelnet() {return this.telnet;}
+
     public void updatePlaneData(float aileron, float elevator, float rudder, float throttle){
-        if (telnet != null) {
+        // within 10 milliSeconds, allow addition of only new 2 task for ExecutorService to send tcp packets only
+        long currTime = System.currentTimeMillis();
+        if (currTime - lastTime < 10) {
+            withinTime++;
+        } else {
+            withinTime = 0;
+        }
+        this.lastTime = currTime;
+        if (withinTime > 2) return;
+
+        // telnet_for_now is final reference to PrintWriter, this.getTelnet may be changed meanwhile
+        final PrintWriter telnet_for_now = this.getTelnet();
+        if (telnet_for_now != null) {
             es.execute(() -> {
-                telnet.print("set /controls/flight/aileron " + aileron + "\r\n");//[-1,1]
-                telnet.print("set /controls/flight/elevator " + elevator + "\r\n");//[-1,1]
-                telnet.print("set /controls/flight/rudder " + rudder + "\r\n");//[-1,1]
-                telnet.print("set /controls/engines/current-engine/throttle " + throttle + "\r\n");//[0,1]
-                telnet.flush();
+                    // send data only if telnet_for_now it is still the current telnet [telnet_for_now is for sure not null]
+                    if (telnet_for_now != this.getTelnet()) {
+                        return;
+                    }
+
+                    telnet_for_now.print("set /controls/flight/aileron " + aileron + "\r\n");//[-1,1]
+                    telnet_for_now.print("set /controls/flight/elevator " + elevator + "\r\n");//[-1,1]
+                    telnet_for_now.print("set /controls/flight/rudder " + rudder + "\r\n");//[-1,1]
+                    telnet_for_now.print("set /controls/engines/current-engine/throttle " + throttle + "\r\n");//[0,1]
+                    telnet_for_now.flush();
+
+                    if (telnet_for_now.checkError()) {
+                        onError.handle(this, new ErrorEventArgs("Disconnected", null));
+                        // manually close the unreachable socket, and it will ensure not spamming onError.handle()
+                        this.telnet = null;
+                    }
             });
         }
     }
