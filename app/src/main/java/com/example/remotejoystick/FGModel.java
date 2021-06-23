@@ -26,14 +26,15 @@ public class FGModel {
         });
     }
     public void updatePlaneData(float aileron, float elevator, float rudder, float throttle){
-        es.execute(() -> {
-            telnet.print("set /controls/flight/aileron " + aileron + "\r\n");//[-1,1]
-            telnet.print("set /controls/flight/elevator " + elevator + "\r\n");//[-1,1]
-            telnet.print("set /controls/flight/rudder " + rudder + "\r\n");//[-1,1]
-            telnet.print("set /controls/engines/current-engine/throttle " + throttle + "\r\n");//[0,1]
-            telnet.flush();
-            telnet.close();
-        });
+        if (telnet != null) {
+            es.execute(() -> {
+                telnet.print("set /controls/flight/aileron " + aileron + "\r\n");//[-1,1]
+                telnet.print("set /controls/flight/elevator " + elevator + "\r\n");//[-1,1]
+                telnet.print("set /controls/flight/rudder " + rudder + "\r\n");//[-1,1]
+                telnet.print("set /controls/engines/current-engine/throttle " + throttle + "\r\n");//[0,1]
+                telnet.flush();
+            });
+        }
     }
 
     // need to use threadpool queue to do tasks,
