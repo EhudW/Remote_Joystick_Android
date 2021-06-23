@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         this.viewModel.onError = new ErrorEventHandler() {
             @Override
             public void handle(Object sender, ErrorEventArgs args) {
-                Toast.makeText(self, args.description, Toast.LENGTH_LONG).show();
+//                Toast.makeText(self, args.description, Toast.LENGTH_LONG).show();
             }
         };
         // bind viewModel to joystick data

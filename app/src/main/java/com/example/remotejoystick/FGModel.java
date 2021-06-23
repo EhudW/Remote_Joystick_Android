@@ -2,16 +2,40 @@ package com.example.remotejoystick;
 
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FGModel {
     public ErrorEventHandler onError = null;
     private PrintWriter telnet = null;
-    public FGModel() {}
-    public void connect(String ipv4, int port){
+    ExecutorService es = null;
+
+    public FGModel() {
+        this.es = Executors.newFixedThreadPool(1);
+    }
+    public void connect(String ipv4, int port) {
+        es.execute(() -> {
+            try {
+                Socket fg = new Socket(ipv4, port);
+                telnet = new PrintWriter(fg.getOutputStream(), true);
+            } catch (Exception e) {
+                if (onError!=null)
+                    onError.handle(this, new ErrorEventArgs("Connection Error", e));
+            }
+        });
     }
     public void updatePlaneData(float aileron, float elevator, float rudder, float throttle){
-
+        es.execute(() -> {
+            telnet.print("set /controls/flight/aileron " + aileron + "\r\n");//[-1,1]
+            telnet.print("set /controls/flight/elevator " + elevator + "\r\n");//[-1,1]
+            telnet.print("set /controls/flight/rudder " + rudder + "\r\n");//[-1,1]
+            telnet.print("set /controls/engines/current-engine/throttle " + throttle + "\r\n");//[0,1]
+            telnet.flush();
+            telnet.close();
+        });
     }
+
     // need to use threadpool queue to do tasks,
     // each task can be :
     // 1.create socket 2.send data via tcp to fg 3.end the pool
