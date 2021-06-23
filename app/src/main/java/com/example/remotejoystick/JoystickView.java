@@ -15,7 +15,10 @@ import androidx.annotation.RequiresApi;
 
 public class JoystickView extends FrameLayout {
     public static class JoystickEventArgs {
-        public float px,py,pa,pb;
+        public final float px;
+        public final float py;
+        public final float pa;
+        public final float pb;
         public JoystickEventArgs(float px, float py, float pa, float pb) {
             this.px = px;
             this.py = py;
@@ -48,7 +51,7 @@ public class JoystickView extends FrameLayout {
         ((SeekBar)(findViewById(R.id.seekBar_value_a))).setProgress(50);
         ((SeekBar)(findViewById(R.id.seekBar2_value_b))).setProgress(0);
     }
-    public void updateObserver(){
+    private void updateObserver(){
         if (onChange != null)
             onChange.handle(this, new JoystickEventArgs(this.px, this.py, this.pa, this.pb));
     }
