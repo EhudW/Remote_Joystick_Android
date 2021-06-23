@@ -1,19 +1,23 @@
 package com.example.remotejoystick;
 
-//import android.app.Dialog;
-import android.app.Activity;
-import android.app.Notification;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.os.Build;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.widget.*;
-import androidx.annotation.RequiresApi;
+
+// class to be component of view, to be included within others views / Layouts in xml
+
+// (joystick_right, joystick_up, horizontal_seekBar_right, vertical_seekBar_up) == (px, py, pa, pb)
+// all px,py,pa,pb are values between 0 to 1,
+// 0 means "no" 1 mean "yes" , 1 == "right" in "joystick_right", for example
+// notice py, pb is 1 when it seems "up" to user,
+// event though in programming,
+// position 30 is lower position in the gui than position 0
 
 public class JoystickView extends FrameLayout {
+    
+    // class to gather px,py,pa,pb
     public static class JoystickEventArgs {
         public final float px;
         public final float py;
@@ -26,6 +30,8 @@ public class JoystickView extends FrameLayout {
             this.pb = pb;
         }
     }
+    
+    // interface of handler that can handle joystick-data values updates == (px, py, pa, pb)
     public static interface JoystickEventHandler {
         // all values between 0 to 1;
         // px,py is the joystick so it isn't accurate -> and probably won't be exactly 0 or 1
@@ -37,31 +43,25 @@ public class JoystickView extends FrameLayout {
     private float py=0.5f;
     private float pa=0.5f;
     private float pb=0;
-
+    
+    // on change of px/py/pa/pb notify by updateObserver() below
     public JoystickEventHandler onChange = null;
-    public void resetValues() {
-        //(findViewById(R.id.j)).layout(0,0,55,55);
-        //((ImageView)(findViewById(R.id.j))).setForegroundGravity(Gravity.CENTER);
-        // will automatically update pa pb and run (3 times) the updateObserver - which will raise this.onChange.handel()
 
-        MotionEvent event = MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,245,245,0);
-        this.dispatchTouchEvent(event);
-        //this.px = 0.5f;
-        //this.py = 0.5f;
-        ((SeekBar)(findViewById(R.id.seekBar_value_a))).setProgress(50);
-        ((SeekBar)(findViewById(R.id.seekBar2_value_b))).setProgress(0);
-    }
     private void updateObserver(){
         if (onChange != null)
             onChange.handle(this, new JoystickEventArgs(this.px, this.py, this.pa, this.pb));
     }
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private void init(Context c) {
 
-    inflate(c ,R.layout.joystick_view,this);
+    // init method to fill within this view (which extends FrameLayout) all the components from joystick_view.xml
+    // should be called only from constructor.
+    // param context should be the context that this view (JoystickView extends FrameLayout) is within.
+    private void init(Context context) {
 
-    int rr =55;
+        inflate(context ,R.layout.joystick_view,this);
+
+        // set listeners to seekbars, to update this.pa/this.pb on their change, and then updateObserver()
         final JoystickView self = this;
+
         ((SeekBar)findViewById(R.id.seekBar_value_a)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -73,7 +73,8 @@ public class JoystickView extends FrameLayout {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-        ((SeekBar)findViewById(R.id.seekBar2_value_b)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+        ((SeekBar)findViewById(R.id.seekBar_value_b)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 self.pb = progress/100f;
@@ -84,51 +85,83 @@ public class JoystickView extends FrameLayout {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-        //resetValues();
-        //invalidate();
+
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
+    // constructors, will call in the end to this.init(context)
     public JoystickView(Context context) {
         this(context, null);
     }
 
+    public JoystickView(Context context, AttributeSet attrs) { this(context, attrs, 0); }
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    public JoystickView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
     public JoystickView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(context);
     }
 
+
+    private final float joystick_border_padding_from_top = 100;
+    private final float joystick_border_padding_from_left = 100;
+    private final float joystick_radius = 55;
+    private final float joystick_movement_border = 290;
+
+    // handle touch on screen = trying to moving the joystick
     @Override
     public boolean onTouchEvent(MotionEvent event){
         if (event == null ) {return true;}
-        int dp = 1;
-        float cx = 100*dp;
-        float cy = 100*dp;
-        float r = 55;//35*dp;
-        float x=event.getX()-100;
-        float y=event.getY()-100;
-        int s = 0;
-        int m = 290;
-        if (x<r || y<r || x>m-r||y>m-r) return  true;
-        (findViewById(R.id.j)).layout((int)(x-r)-s,(int)(y-r)-s,(int)(x+r)-s,(int)(y+r)-s);
-         px = (x-r)/(m-r-r);
-         py = (y-r)/(m-r-r);
 
+        // get x,y within the joystick_movement_square[== the green frame layout which R.id.joystick_img is within it]
+        float x = event.getX() - joystick_border_padding_from_left;
+        float y = event.getY() - joystick_border_padding_from_top;
+
+        // all joystick circle must stay within its movement square-area
+        if (x < joystick_radius || y < joystick_radius ||
+                     x > joystick_movement_border - joystick_radius || y > joystick_movement_border - joystick_radius) {
+            return true;
+        }
+        // set new joystick position, where (x,y) is the center, and joystick_img is square of 2r*2r
+        (findViewById(R.id.joystick_img)).layout((int) (x - joystick_radius), (int) (y - joystick_radius),
+                                                             (int) (x + joystick_radius), (int) (y + joystick_radius));
+
+        // consider the reachable area that the joystick can be within :
+        // x:[radius, joystick_movement_border - joystick_radius]
+        // if we shift "left" we obtain x:[0, joystick_movement_border - 2*joystick_radius]
+        // and px is the progress from 0 to (joystick_movement_border - 2*joystick_radius)
+        // same in y axis
+        this.px = (x-joystick_radius)/(joystick_movement_border - 2*joystick_radius);
+        this.py = (y-joystick_radius)/(joystick_movement_border - 2*joystick_radius);
+
+         // the user see up direction, while in programming is the lower Y position value
+        this.py = 1 - this.py;
+
+        // notify about the changes
         this.updateObserver();
-
-        //invalidate();
         return  true;
     }
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+
+    // reset VALUES of px, py, pa, pb AND their POSITIONS in the gui.
+    public void resetValues() {
+
+        // will automatically update and invoke (3 times) the updateObserver() - which will raise this.onChange.handel()
+
+        // simulate moving the joystick
+
+        // we want 0.5 == (x-joystick_radius)/(joystick_movement_border - 2*joystick_radius)
+        // meaning  (joystick_movement_border - 2*joystick_radius) == 2*(x-joystick_radius)
+        // therefore x = joystick_movement_border / 2
+        // therefore x with considering padding == (joystick_movement_border / 2) + joystick_border_padding_from_left
+        // same way: y with considering padding == (joystick_movement_border / 2) + joystick_border_padding_from_top
+        float padded_x = (joystick_movement_border / 2) + joystick_border_padding_from_left;
+        float padded_y = (joystick_movement_border / 2) + joystick_border_padding_from_top;
+
+        long temp = SystemClock.uptimeMillis();
+        MotionEvent event = MotionEvent.obtain(temp, temp,
+                MotionEvent.ACTION_DOWN, padded_x, padded_y, 0);
+        this.dispatchTouchEvent(event);
+
+        // simulate moving the seek bars
+        ((SeekBar)(findViewById(R.id.seekBar_value_a))).setProgress(50);
+        ((SeekBar)(findViewById(R.id.seekBar_value_b))).setProgress(0);
     }
 }
