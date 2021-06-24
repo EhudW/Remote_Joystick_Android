@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.widget.*;
 
@@ -102,14 +103,14 @@ public class JoystickView extends FrameLayout {
     }
 
 
-    private final float joystick_border_padding_from_top = 100;
-    private final float joystick_border_padding_from_left = 100;
     // before using those fields, ensureRadiusAndMovementBorder() should be called
+    private float joystick_border_padding_from_top = -1;
+    private float joystick_border_padding_from_left = -1;
     private float joystick_radius = -1;
     private float joystick_movement_border = -1;
 
     // get the specific-mobile size of green_frame (joystick_movement area)
-    // and init this.joystick_radius, this.joystick_movement_border
+    // and init this.joystick_radius, this.joystick_movement_border, joystick_border_padding_from_top / left
     // should be called only after rendering view has finished
     private void ensureRadiusAndMovementBorder() {
         if (this.joystick_radius > 0)
@@ -118,6 +119,13 @@ public class JoystickView extends FrameLayout {
         findViewById(R.id.green_frame).getDrawingRect(r);
         joystick_movement_border = r.right;
         joystick_radius =  r.right / 5.5f;
+        // The green_frame is 200*200dpi and in the center(both left-right and top-bottom) of 300*300dpi joystick_frame
+        // (which left-top of this JoystickView)
+        // meaning, green_frame is 50dpi from top/left, following lines get dpi=density
+        DisplayMetrics m = new DisplayMetrics();
+        (findViewById(R.id.joystick_frame)).getDisplay().getRealMetrics(m);
+        joystick_border_padding_from_top = 50 * m.density;
+        joystick_border_padding_from_left = 50 * m.density;
     }
 
     // handle touch on screen = trying to moving the joystick
