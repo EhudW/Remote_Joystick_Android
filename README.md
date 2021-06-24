@@ -32,6 +32,7 @@ Notice the joystick is based on touch events, so in order to make the joystick w
 # Folder structure
 * [source folder](app/src/main/),<br>contains java/com/example/remotejoysick/ folder which has all the *.java files,<br>and res/ folder which has all resources such as layout/ folder of xml which describes the gui of the views
 * [presentation](Android_Remote_Joystick.pptx), which also contains uml-class diagram
+* The apk that can be installed in your android-device : [JoystickRemote.apk](JoystickRemote.apk)
 
 # How to find my Local Ip version 4 address?
 * In linux bash:     ip -c addr<br>
