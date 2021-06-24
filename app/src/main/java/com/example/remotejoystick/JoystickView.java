@@ -1,6 +1,7 @@
 package com.example.remotejoystick;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -103,14 +104,27 @@ public class JoystickView extends FrameLayout {
 
     private final float joystick_border_padding_from_top = 100;
     private final float joystick_border_padding_from_left = 100;
-    private final float joystick_radius = 55;
-    private final float joystick_movement_border = 290;
+    // before using those fields, ensureRadiusAndMovementBorder() should be called
+    private float joystick_radius = -1;
+    private float joystick_movement_border = -1;
+
+    // get the specific-mobile size of green_frame (joystick_movement area)
+    // and init this.joystick_radius, this.joystick_movement_border
+    // should be called only after rendering view has finished
+    private void ensureRadiusAndMovementBorder() {
+        if (this.joystick_radius > 0)
+            return;
+        Rect r = new Rect();
+        findViewById(R.id.green_frame).getDrawingRect(r);
+        joystick_movement_border = r.right;
+        joystick_radius =  r.right / 5.5f;
+    }
 
     // handle touch on screen = trying to moving the joystick
     @Override
     public boolean onTouchEvent(MotionEvent event){
         if (event == null ) {return true;}
-
+        ensureRadiusAndMovementBorder();
         // get x,y within the joystick_movement_square[== the green frame layout which R.id.joystick_img is within it]
         float x = event.getX() - joystick_border_padding_from_left;
         float y = event.getY() - joystick_border_padding_from_top;
@@ -142,7 +156,7 @@ public class JoystickView extends FrameLayout {
 
     // reset VALUES of px, py, pa, pb AND their POSITIONS in the gui.
     public void resetValues() {
-
+        ensureRadiusAndMovementBorder();
         // will automatically update and invoke (3 times) the updateObserver() - which will raise this.onChange.handel()
 
         // simulate moving the joystick

@@ -23,7 +23,7 @@
 
                     <FrameLayout
                             android:layout_width="150dp"
-                            android:layout_height="150dp" android:background="#8A0CC19D">
+                            android:layout_height="150dp" android:background="#8A0CC19D" android:id="@+id/green_frame">
 
                         <ImageView
                                 android:layout_width="55dp"
