@@ -45,3 +45,6 @@ which usually in used by home loacl-net for inner ips.
 * You can discover IP address of yourdomain.com by:<br>
   ping yourdomain.com<br>
   (Ctrl+C to stop the command)
+  
+  # Youtube link
+* For further help you can watch this [link here](https://youtu.be/LPS5-bBX44E)
